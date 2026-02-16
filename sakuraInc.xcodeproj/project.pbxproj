@@ -1,0 +1,788 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5840D9DA2F4338B600BCEF7F /* sakuraInc Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5840D9D92F4338B600BCEF7F /* sakuraInc Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5840D9C42F4338B600BCEF7F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5840D99E2F4338B500BCEF7F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5840D9A52F4338B500BCEF7F;
+			remoteInfo = sakuraInc;
+		};
+		5840D9CE2F4338B600BCEF7F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5840D99E2F4338B500BCEF7F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5840D9A52F4338B500BCEF7F;
+			remoteInfo = sakuraInc;
+		};
+		5840D9DB2F4338B600BCEF7F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5840D99E2F4338B500BCEF7F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5840D9D82F4338B600BCEF7F;
+			remoteInfo = "sakuraInc Extension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5840D9F82F4338B600BCEF7F /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				5840D9DA2F4338B600BCEF7F /* sakuraInc Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		5840D9A62F4338B500BCEF7F /* sakuraInc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = sakuraInc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5840D9C32F4338B600BCEF7F /* sakuraIncTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = sakuraIncTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5840D9CD2F4338B600BCEF7F /* sakuraIncUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = sakuraIncUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5840D9D92F4338B600BCEF7F /* sakuraInc Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "sakuraInc Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5840D9F32F4338B600BCEF7F /* Exceptions for "sakuraInc" folder in "sakuraInc" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5840D9A52F4338B500BCEF7F /* sakuraInc */;
+		};
+		5840D9F72F4338B600BCEF7F /* Exceptions for "sakuraInc Extension" folder in "sakuraInc Extension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5840D9D82F4338B600BCEF7F /* sakuraInc Extension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		5840D9A82F4338B500BCEF7F /* sakuraInc */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5840D9F32F4338B600BCEF7F /* Exceptions for "sakuraInc" folder in "sakuraInc" target */,
+			);
+			path = sakuraInc;
+			sourceTree = "<group>";
+		};
+		5840D9C62F4338B600BCEF7F /* sakuraIncTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = sakuraIncTests;
+			sourceTree = "<group>";
+		};
+		5840D9D02F4338B600BCEF7F /* sakuraIncUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = sakuraIncUITests;
+			sourceTree = "<group>";
+		};
+		5840D9DD2F4338B600BCEF7F /* sakuraInc Extension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5840D9F72F4338B600BCEF7F /* Exceptions for "sakuraInc Extension" folder in "sakuraInc Extension" target */,
+			);
+			explicitFolders = (
+				Resources/_locales,
+				Resources/images,
+			);
+			path = "sakuraInc Extension";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5840D9A32F4338B500BCEF7F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5840D9C02F4338B600BCEF7F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5840D9CA2F4338B600BCEF7F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5840D9D62F4338B600BCEF7F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5840D99D2F4338B500BCEF7F = {
+			isa = PBXGroup;
+			children = (
+				5840D9A82F4338B500BCEF7F /* sakuraInc */,
+				5840D9C62F4338B600BCEF7F /* sakuraIncTests */,
+				5840D9D02F4338B600BCEF7F /* sakuraIncUITests */,
+				5840D9DD2F4338B600BCEF7F /* sakuraInc Extension */,
+				5840D9A72F4338B500BCEF7F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5840D9A72F4338B500BCEF7F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5840D9A62F4338B500BCEF7F /* sakuraInc.app */,
+				5840D9C32F4338B600BCEF7F /* sakuraIncTests.xctest */,
+				5840D9CD2F4338B600BCEF7F /* sakuraIncUITests.xctest */,
+				5840D9D92F4338B600BCEF7F /* sakuraInc Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5840D9A52F4338B500BCEF7F /* sakuraInc */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5840D9F92F4338B600BCEF7F /* Build configuration list for PBXNativeTarget "sakuraInc" */;
+			buildPhases = (
+				5840D9A22F4338B500BCEF7F /* Sources */,
+				5840D9A32F4338B500BCEF7F /* Frameworks */,
+				5840D9A42F4338B500BCEF7F /* Resources */,
+				5840D9F82F4338B600BCEF7F /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5840D9DC2F4338B600BCEF7F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5840D9A82F4338B500BCEF7F /* sakuraInc */,
+			);
+			name = sakuraInc;
+			packageProductDependencies = (
+			);
+			productName = sakuraInc;
+			productReference = 5840D9A62F4338B500BCEF7F /* sakuraInc.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5840D9C22F4338B600BCEF7F /* sakuraIncTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5840D9FE2F4338B600BCEF7F /* Build configuration list for PBXNativeTarget "sakuraIncTests" */;
+			buildPhases = (
+				5840D9BF2F4338B600BCEF7F /* Sources */,
+				5840D9C02F4338B600BCEF7F /* Frameworks */,
+				5840D9C12F4338B600BCEF7F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5840D9C52F4338B600BCEF7F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5840D9C62F4338B600BCEF7F /* sakuraIncTests */,
+			);
+			name = sakuraIncTests;
+			packageProductDependencies = (
+			);
+			productName = sakuraIncTests;
+			productReference = 5840D9C32F4338B600BCEF7F /* sakuraIncTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5840D9CC2F4338B600BCEF7F /* sakuraIncUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5840DA012F4338B600BCEF7F /* Build configuration list for PBXNativeTarget "sakuraIncUITests" */;
+			buildPhases = (
+				5840D9C92F4338B600BCEF7F /* Sources */,
+				5840D9CA2F4338B600BCEF7F /* Frameworks */,
+				5840D9CB2F4338B600BCEF7F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5840D9CF2F4338B600BCEF7F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5840D9D02F4338B600BCEF7F /* sakuraIncUITests */,
+			);
+			name = sakuraIncUITests;
+			packageProductDependencies = (
+			);
+			productName = sakuraIncUITests;
+			productReference = 5840D9CD2F4338B600BCEF7F /* sakuraIncUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		5840D9D82F4338B600BCEF7F /* sakuraInc Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5840D9F42F4338B600BCEF7F /* Build configuration list for PBXNativeTarget "sakuraInc Extension" */;
+			buildPhases = (
+				5840D9D52F4338B600BCEF7F /* Sources */,
+				5840D9D62F4338B600BCEF7F /* Frameworks */,
+				5840D9D72F4338B600BCEF7F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5840D9DD2F4338B600BCEF7F /* sakuraInc Extension */,
+			);
+			name = "sakuraInc Extension";
+			packageProductDependencies = (
+			);
+			productName = "sakuraInc Extension";
+			productReference = 5840D9D92F4338B600BCEF7F /* sakuraInc Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5840D99E2F4338B500BCEF7F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					5840D9A52F4338B500BCEF7F = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					5840D9C22F4338B600BCEF7F = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 5840D9A52F4338B500BCEF7F;
+					};
+					5840D9CC2F4338B600BCEF7F = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 5840D9A52F4338B500BCEF7F;
+					};
+					5840D9D82F4338B600BCEF7F = {
+						CreatedOnToolsVersion = 26.2;
+					};
+				};
+			};
+			buildConfigurationList = 5840D9A12F4338B500BCEF7F /* Build configuration list for PBXProject "sakuraInc" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 5840D99D2F4338B500BCEF7F;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 5840D9A72F4338B500BCEF7F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5840D9A52F4338B500BCEF7F /* sakuraInc */,
+				5840D9C22F4338B600BCEF7F /* sakuraIncTests */,
+				5840D9CC2F4338B600BCEF7F /* sakuraIncUITests */,
+				5840D9D82F4338B600BCEF7F /* sakuraInc Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5840D9A42F4338B500BCEF7F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5840D9C12F4338B600BCEF7F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5840D9CB2F4338B600BCEF7F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5840D9D72F4338B600BCEF7F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5840D9A22F4338B500BCEF7F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5840D9BF2F4338B600BCEF7F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5840D9C92F4338B600BCEF7F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5840D9D52F4338B600BCEF7F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5840D9C52F4338B600BCEF7F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5840D9A52F4338B500BCEF7F /* sakuraInc */;
+			targetProxy = 5840D9C42F4338B600BCEF7F /* PBXContainerItemProxy */;
+		};
+		5840D9CF2F4338B600BCEF7F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5840D9A52F4338B500BCEF7F /* sakuraInc */;
+			targetProxy = 5840D9CE2F4338B600BCEF7F /* PBXContainerItemProxy */;
+		};
+		5840D9DC2F4338B600BCEF7F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5840D9D82F4338B600BCEF7F /* sakuraInc Extension */;
+			targetProxy = 5840D9DB2F4338B600BCEF7F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		5840D9F52F4338B600BCEF7F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 58HSBH76L6;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "sakuraInc Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "sakuraInc Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fkmstk.sakuraInc.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5840D9F62F4338B600BCEF7F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 58HSBH76L6;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "sakuraInc Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "sakuraInc Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fkmstk.sakuraInc.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5840D9FA2F4338B600BCEF7F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 58HSBH76L6;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = sakuraInc/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = sakuraInc;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fkmstk.sakuraInc;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5840D9FB2F4338B600BCEF7F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 58HSBH76L6;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = sakuraInc/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = sakuraInc;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fkmstk.sakuraInc;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5840D9FC2F4338B600BCEF7F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 58HSBH76L6;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		5840D9FD2F4338B600BCEF7F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 58HSBH76L6;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		5840D9FF2F4338B600BCEF7F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 58HSBH76L6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fkmstk.sakuraIncTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/sakuraInc.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/sakuraInc";
+			};
+			name = Debug;
+		};
+		5840DA002F4338B600BCEF7F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 58HSBH76L6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fkmstk.sakuraIncTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/sakuraInc.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/sakuraInc";
+			};
+			name = Release;
+		};
+		5840DA022F4338B600BCEF7F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 58HSBH76L6;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fkmstk.sakuraIncUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = sakuraInc;
+			};
+			name = Debug;
+		};
+		5840DA032F4338B600BCEF7F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 58HSBH76L6;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fkmstk.sakuraIncUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = sakuraInc;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5840D9A12F4338B500BCEF7F /* Build configuration list for PBXProject "sakuraInc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5840D9FC2F4338B600BCEF7F /* Debug */,
+				5840D9FD2F4338B600BCEF7F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5840D9F42F4338B600BCEF7F /* Build configuration list for PBXNativeTarget "sakuraInc Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5840D9F52F4338B600BCEF7F /* Debug */,
+				5840D9F62F4338B600BCEF7F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5840D9F92F4338B600BCEF7F /* Build configuration list for PBXNativeTarget "sakuraInc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5840D9FA2F4338B600BCEF7F /* Debug */,
+				5840D9FB2F4338B600BCEF7F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5840D9FE2F4338B600BCEF7F /* Build configuration list for PBXNativeTarget "sakuraIncTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5840D9FF2F4338B600BCEF7F /* Debug */,
+				5840DA002F4338B600BCEF7F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5840DA012F4338B600BCEF7F /* Build configuration list for PBXNativeTarget "sakuraIncUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5840DA022F4338B600BCEF7F /* Debug */,
+				5840DA032F4338B600BCEF7F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 5840D99E2F4338B500BCEF7F /* Project object */;
+}
