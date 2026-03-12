@@ -1,7 +1,7 @@
 body {
     margin: 0;
     padding: 0;
-    width: 280px;
+    width: 320px;
     background: #f8f9fb;
     color: #111111;
     font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
@@ -19,6 +19,13 @@ h1 {
 p {
     margin: 0 0 8px;
     font-size: 13px;
+    line-height: 1.5;
+}
+
+.notice-list {
+    margin: 0 0 8px;
+    padding-left: 18px;
+    font-size: 12px;
     line-height: 1.5;
 }
 

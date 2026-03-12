@@ -1,10 +1,10 @@
 {
     "extension_name": {
-        "message": "Sakura Checker for Amazon",
+        "message": "Sakura Review Reference",
         "description": "The display name for the extension."
     },
     "extension_description": {
-        "message": "Show Sakura Checker results directly on Amazon product pages.",
+        "message": "Display external review reference scores on product detail pages.",
         "description": "Description of what the extension does."
     }
 }

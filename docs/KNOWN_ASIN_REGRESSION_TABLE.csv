@@ -1,0 +1,9 @@
+asin,expected_status,expected_score,notes
+B0DTEST001,ok,0,low risk baseline
+B0DTEST002,ok,20,low band boundary
+B0DTEST003,ok,40,medium band boundary
+B0DTEST004,ok,60,high band boundary
+B0DTEST005,ok,80,very-high band boundary
+B0DTEST006,not_found,,service has no record
+B0DTEST007,error,,network error simulation
+B0DTEST008,error,,parse error simulation

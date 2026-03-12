@@ -169,6 +169,7 @@
 				5840D9A22F4338B500BCEF7F /* Sources */,
 				5840D9A32F4338B500BCEF7F /* Frameworks */,
 				5840D9A42F4338B500BCEF7F /* Resources */,
+				58A1CA102F50000100BCEF7F /* Validate Release Metadata */,
 				5840D9F82F4338B600BCEF7F /* Embed Foundation Extensions */,
 			);
 			buildRules = (
@@ -332,6 +333,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		58A1CA102F50000100BCEF7F /* Validate Release Metadata */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/sakuraInc/Resources/AppConfig.plist",
+				"$(SRCROOT)/scripts/validate_release_metadata.sh",
+			);
+			name = "Validate Release Metadata";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/scripts/validate_release_metadata.sh\" \"$SRCROOT/sakuraInc/Resources/AppConfig.plist\" \"$CONFIGURATION\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5840D9A22F4338B500BCEF7F /* Sources */ = {

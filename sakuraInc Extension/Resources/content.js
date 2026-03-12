@@ -20,6 +20,10 @@ function extractAsinFromUrl(urlValue) {
 }
 
 function extractAsinFromDom() {
+    if (typeof document === "undefined") {
+        return null;
+    }
+
     const selectors = [
         "#ASIN",
         "input[name='ASIN']",
@@ -52,10 +56,18 @@ function extractAsinFromDom() {
 }
 
 function extractAsin() {
+    if (typeof window === "undefined") {
+        return null;
+    }
+
     return extractAsinFromUrl(window.location.href) ?? extractAsinFromDom();
 }
 
 function ensureStyle() {
+    if (typeof document === "undefined") {
+        return;
+    }
+
     if (document.getElementById(STYLE_ID)) {
         return;
     }
@@ -139,6 +151,10 @@ function ensureStyle() {
 }
 
 function findMountPoint() {
+    if (typeof document === "undefined") {
+        return null;
+    }
+
     const selectors = [
         "#title_feature_div",
         "#centerCol",
@@ -161,13 +177,13 @@ function createPanel(asin) {
     panel.className = "sakura-neutral";
     panel.innerHTML = `
         <div class="sakura-header">
-            <div class="sakura-title">サクラチェッカー</div>
+            <div class="sakura-title">サクラ判定</div>
             <span class="sakura-badge">確認中</span>
         </div>
         <div class="sakura-score">...</div>
         <div class="sakura-summary">ASIN ${asin} の判定を取得中だっちゃ。</div>
         <div class="sakura-meta">
-            <a class="sakura-link" href="#" target="_blank" rel="noopener noreferrer">サクラチェッカーで開く</a>
+            <a class="sakura-link" href="#" target="_blank" rel="noopener noreferrer">判定元ページを開く</a>
             <span class="sakura-time"></span>
         </div>
     `;
@@ -190,6 +206,18 @@ function formatTime(isoString) {
     }
 }
 
+function errorMessageForResult(result) {
+    if (result?.errorType === "parse_error") {
+        return "判定データ形式の変更により、結果を取得できませんでした。";
+    }
+
+    if (result?.errorType === "network_error") {
+        return "判定サービスへの接続に失敗しました。しばらくして再試行してほしいっちゃ。";
+    }
+
+    return result?.message || "結果の取得に失敗したっちゃ。";
+}
+
 function updatePanel(panel, result, asin) {
     const badge = panel.querySelector(".sakura-badge");
     const score = panel.querySelector(".sakura-score");
@@ -204,8 +232,8 @@ function updatePanel(panel, result, asin) {
     if (result?.status === "ok") {
         panel.className = `sakura-level-${result.riskLevel ?? "medium"}`;
         badge.textContent = result.riskLabel ?? "判定";
-        score.textContent = `${result.score}%`;
-        summary.textContent = `サクラ度 ${result.score}% / ${result.title ?? "判定結果を取得しました。"}`;
+        score.textContent = String(result.score ?? "--");
+        summary.textContent = `サクラ度 ${result.score ?? "--"} / ${result.title ?? "判定結果を取得しました。"}`;
         return;
     }
 
@@ -214,14 +242,11 @@ function updatePanel(panel, result, asin) {
     badge.textContent = "未判定";
 
     if (result?.status === "not_found") {
-        summary.textContent = "この商品はサクラチェッカー上で未登録みたいだっちゃ。";
+        summary.textContent = "この商品は判定元サービス上で未登録みたいだっちゃ。";
         return;
     }
 
-    const detailText = String(result?.details ?? "").trim();
-    summary.textContent = detailText
-        ? `${result?.message || "結果の取得に失敗したっちゃ。"} (${detailText})`
-        : (result?.message || "結果の取得に失敗したっちゃ。");
+    summary.textContent = errorMessageForResult(result);
 }
 
 async function mountPanel() {
@@ -248,14 +273,30 @@ async function mountPanel() {
         });
         updatePanel(panel, result, asin);
     } catch {
-        updatePanel(panel, { status: "error" }, asin);
+        updatePanel(panel, {
+            status: "error",
+            errorType: "network_error",
+            message: "判定サービスに接続できませんでした。"
+        }, asin);
     }
 }
 
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+            void mountPanel();
+        });
+    } else {
         void mountPanel();
-    });
-} else {
-    void mountPanel();
+    }
+}
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = {
+        errorMessageForResult,
+        extractAsin,
+        extractAsinFromDom,
+        extractAsinFromUrl,
+        formatTime
+    };
 }

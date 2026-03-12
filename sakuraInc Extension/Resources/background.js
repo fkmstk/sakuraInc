@@ -1,8 +1,33 @@
 const REQUEST_TIMEOUT_MS = 15000;
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const NATIVE_APP_ID = "com.fkmstk.sakuraInc.Extension";
+const SPEC_RESOURCE_PATH = "sakura_parser_spec.json";
+
+const DEFAULT_PARSER_SPEC = {
+    titleSuffixPattern: "\\s*-\\s*サクラチェッカー.*$",
+    embeddedTextPattern: "サクラ度は\\s*([0-9]{1,3})\\s*です",
+    fallbackScorePattern: "<p[^>]*class=[\"'][^\"']*sakura-alert[^\"']*[\"'][^>]*>.*?サクラ度[^0-9]{0,20}([0-9]{1,3})",
+    notFoundPatterns: ["見つかりません", "データがありません", "判定できません", "該当する商品はありません"],
+    riskBands: [
+        { min: 80, level: "very-high", label: "危険" },
+        { min: 60, level: "high", label: "注意" },
+        { min: 40, level: "medium", label: "やや注意" },
+        { min: 20, level: "low", label: "低め" },
+        { min: 0, level: "very-low", label: "低リスク" }
+    ],
+    scoreImageHashes: {}
+};
 
 const resultCache = new Map();
+let parserSpecPromise = null;
+
+function getRuntimeUrl(path) {
+    if (typeof browser !== "undefined" && typeof browser?.runtime?.getURL === "function") {
+        return browser.runtime.getURL(path);
+    }
+
+    return path;
+}
 
 function normalizeAsin(rawValue) {
     const value = String(rawValue ?? "").trim().toUpperCase();
@@ -21,63 +46,241 @@ function decodeHtmlEntities(text) {
     return String(text ?? "").replace(/&(amp|lt|gt|quot|#39);/g, (match) => entities[match] ?? match);
 }
 
-function scoreToRiskLevel(score) {
-    if (score >= 80) {
-        return { level: "very-high", label: "危険" };
+function normalizeRiskBands(rawBands) {
+    if (!Array.isArray(rawBands)) {
+        return [...DEFAULT_PARSER_SPEC.riskBands];
     }
 
-    if (score >= 60) {
-        return { level: "high", label: "注意" };
-    }
+    const normalized = rawBands
+        .map((band) => ({
+            min: Number.isFinite(Number(band?.min)) ? Number(band.min) : 0,
+            level: typeof band?.level === "string" ? band.level : "medium",
+            label: typeof band?.label === "string" ? band.label : "判定"
+        }))
+        .sort((left, right) => right.min - left.min);
 
-    if (score >= 40) {
-        return { level: "medium", label: "やや注意" };
-    }
-
-    if (score >= 20) {
-        return { level: "low", label: "低め" };
-    }
-
-    return { level: "very-low", label: "低リスク" };
+    return normalized.length > 0 ? normalized : [...DEFAULT_PARSER_SPEC.riskBands];
 }
 
-function parseSakuraCheckerHtml(html, asin, sourceUrl) {
+function normalizeParserSpec(rawSpec) {
+    const spec = rawSpec && typeof rawSpec === "object" ? rawSpec : {};
+
+    const notFoundPatterns = Array.isArray(spec.notFoundPatterns)
+        ? spec.notFoundPatterns.filter((item) => typeof item === "string" && item.trim().length > 0)
+        : DEFAULT_PARSER_SPEC.notFoundPatterns;
+
+    const scoreImageHashes = Object.fromEntries(
+        Object.entries(spec.scoreImageHashes ?? {}).filter(([hash, score]) => {
+            const validHash = typeof hash === "string" && hash.length > 0;
+            const validScore = Number.isFinite(Number(score));
+            return validHash && validScore;
+        }).map(([hash, score]) => [hash, Number(score)])
+    );
+
+    return {
+        titleSuffixPattern: typeof spec.titleSuffixPattern === "string"
+            ? spec.titleSuffixPattern
+            : DEFAULT_PARSER_SPEC.titleSuffixPattern,
+        embeddedTextPattern: typeof spec.embeddedTextPattern === "string"
+            ? spec.embeddedTextPattern
+            : DEFAULT_PARSER_SPEC.embeddedTextPattern,
+        fallbackScorePattern: typeof spec.fallbackScorePattern === "string"
+            ? spec.fallbackScorePattern
+            : DEFAULT_PARSER_SPEC.fallbackScorePattern,
+        notFoundPatterns,
+        riskBands: normalizeRiskBands(spec.riskBands),
+        scoreImageHashes
+    };
+}
+
+async function loadParserSpec() {
+    if (parserSpecPromise) {
+        return parserSpecPromise;
+    }
+
+    parserSpecPromise = (async () => {
+        try {
+            const response = await fetch(getRuntimeUrl(SPEC_RESOURCE_PATH));
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const rawSpec = await response.json();
+            return normalizeParserSpec(rawSpec);
+        } catch {
+            return normalizeParserSpec(DEFAULT_PARSER_SPEC);
+        }
+    })();
+
+    return parserSpecPromise;
+}
+
+function scoreToRiskLevel(score, spec) {
+    for (const band of spec.riskBands) {
+        if (score >= band.min) {
+            return {
+                level: band.level,
+                label: band.label
+            };
+        }
+    }
+
+    return { level: "medium", label: "判定" };
+}
+
+function decodeEmbeddedWidgetSnippets(rawHtml) {
+    const snippets = [];
+    const scriptPattern = /window\[_0x\]\((['"])([^'"]+)\1\)/gi;
+
+    if (typeof atob !== "function") {
+        return snippets;
+    }
+
+    let scriptMatch = null;
+    while ((scriptMatch = scriptPattern.exec(rawHtml)) !== null) {
+        const scriptPayload = scriptMatch?.[2];
+        if (!scriptPayload) {
+            continue;
+        }
+
+        try {
+            const stage1 = atob(scriptPayload);
+            const stage2Match = stage1.match(/var\s+\w+\s*=\s*(['"])([^'"]+)\1/i);
+            const stage2Payload = stage2Match?.[2];
+            if (!stage2Payload) {
+                continue;
+            }
+
+            const stage2 = atob(stage2Payload);
+            const decoded = (() => {
+                try {
+                    return decodeURIComponent(stage2);
+                } catch {
+                    return stage2;
+                }
+            })();
+
+            snippets.push(decoded);
+        } catch {
+            // malformed payloads are ignored.
+        }
+    }
+
+    return snippets;
+}
+
+function base64ToUint8Array(base64Payload) {
+    const binary = atob(base64Payload);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+}
+
+async function sha256Hex(base64Payload) {
+    if (typeof atob !== "function" || typeof crypto?.subtle?.digest !== "function") {
+        return null;
+    }
+
+    const bytes = base64ToUint8Array(base64Payload);
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(digest))
+        .map((value) => value.toString(16).padStart(2, "0"))
+        .join("");
+}
+
+function clampScore(score) {
+    return Math.max(0, Math.min(100, score));
+}
+
+async function parseScoreFromEmbeddedWidgets(rawHtml, spec) {
+    const snippets = decodeEmbeddedWidgetSnippets(rawHtml);
+    const scoreImageHashes = new Map(Object.entries(spec.scoreImageHashes));
+
+    for (const snippet of snippets) {
+        const sakuraIndex = snippet.search(/sakura-num/i);
+        if (sakuraIndex >= 0) {
+            const tail = snippet.slice(sakuraIndex);
+            const imageMatches = tail.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/gi);
+            for (const imageMatch of imageMatches) {
+                const payload = imageMatch?.[1];
+                if (!payload) {
+                    continue;
+                }
+
+                try {
+                    const digest = await sha256Hex(payload);
+                    if (digest && scoreImageHashes.has(digest)) {
+                        return clampScore(scoreImageHashes.get(digest));
+                    }
+                } catch {
+                    // hashing failure should not abort parsing.
+                }
+            }
+        }
+
+        const textScoreMatch = snippet.match(new RegExp(spec.embeddedTextPattern, "i"));
+        if (textScoreMatch?.[1]) {
+            const parsed = Number.parseInt(textScoreMatch[1], 10);
+            if (!Number.isNaN(parsed)) {
+                return clampScore(parsed);
+            }
+        }
+    }
+
+    return null;
+}
+
+function makeErrorResult({ asin, sourceUrl, message, errorType, details }) {
+    const result = {
+        status: "error",
+        asin,
+        sourceUrl,
+        fetchedAt: new Date().toISOString(),
+        message,
+        errorType
+    };
+
+    if (typeof details === "string" && details.trim().length > 0) {
+        result.details = details.trim();
+    }
+
+    return result;
+}
+
+async function parseSakuraCheckerHtml(html, asin, sourceUrl, specOverride = null) {
+    const spec = specOverride ?? await loadParserSpec();
+
     const rawHtml = String(html ?? "");
     const compactText = rawHtml.replace(/\s+/g, " ");
 
     const titleMatch = compactText.match(/<title>(.*?)<\/title>/i);
     const rawTitle = titleMatch?.[1] ?? "";
-    const title = decodeHtmlEntities(rawTitle).replace(/\s*-\s*サクラチェッカー.*$/i, "").trim();
+    const title = decodeHtmlEntities(rawTitle)
+        .replace(new RegExp(spec.titleSuffixPattern, "i"), "")
+        .trim();
 
-    const scorePatterns = [
-        /サクラ度[^0-9]{0,20}([0-9]{1,3})\s*%/i,
-        /危険度[^0-9]{0,20}([0-9]{1,3})\s*%/i,
-        /["']score["']\s*[:=]\s*["']?([0-9]{1,3})["']?/i,
-        /data-score=["']?([0-9]{1,3})["']?/i
-    ];
+    let score = await parseScoreFromEmbeddedWidgets(rawHtml, spec);
 
-    let score = null;
-
-    for (const pattern of scorePatterns) {
-        const match = compactText.match(pattern);
-        if (match?.[1]) {
-            const parsed = Number.parseInt(match[1], 10);
+    if (score === null) {
+        const fallbackMatch = compactText.match(new RegExp(spec.fallbackScorePattern, "i"));
+        if (fallbackMatch?.[1]) {
+            const parsed = Number.parseInt(fallbackMatch[1], 10);
             if (!Number.isNaN(parsed)) {
-                score = Math.max(0, Math.min(100, parsed));
-                break;
+                score = clampScore(parsed);
             }
         }
     }
 
     if (score === null) {
-        const notFoundPatterns = [
-            /見つかりません/i,
-            /データがありません/i,
-            /判定できません/i,
-            /該当する商品はありません/i
-        ];
+        const isNotFound = spec.notFoundPatterns.some((pattern) => {
+            try {
+                return new RegExp(pattern, "i").test(compactText);
+            } catch {
+                return compactText.includes(pattern);
+            }
+        });
 
-        const isNotFound = notFoundPatterns.some((pattern) => pattern.test(compactText));
         if (isNotFound) {
             return {
                 status: "not_found",
@@ -88,17 +291,16 @@ function parseSakuraCheckerHtml(html, asin, sourceUrl) {
             };
         }
 
-        return {
-            status: "error",
+        return makeErrorResult({
             asin,
-            title: title || `ASIN ${asin}`,
             sourceUrl,
-            fetchedAt: new Date().toISOString(),
-            message: "サクラチェッカーの判定値を解析できませんでした。"
-        };
+            message: "判定データを解析できませんでした。",
+            errorType: "parse_error"
+        });
     }
 
-    const risk = scoreToRiskLevel(score);
+    const riskBaseScore = score <= 10 ? score * 10 : score;
+    const risk = scoreToRiskLevel(riskBaseScore, spec);
 
     return {
         status: "ok",
@@ -110,6 +312,43 @@ function parseSakuraCheckerHtml(html, asin, sourceUrl) {
         sourceUrl,
         fetchedAt: new Date().toISOString()
     };
+}
+
+async function fetchViaNativeHost(asin) {
+    if (typeof browser?.runtime?.sendNativeMessage !== "function") {
+        return makeErrorResult({
+            asin,
+            sourceUrl: `https://sakura-checker.jp/search/${encodeURIComponent(asin)}/`,
+            message: "ネイティブ連携が利用できません。",
+            errorType: "native_error"
+        });
+    }
+
+    try {
+        const response = await browser.runtime.sendNativeMessage(NATIVE_APP_ID, {
+            type: "FETCH_SAKURA_RESULT",
+            asin
+        });
+
+        if (!response || typeof response !== "object") {
+            return makeErrorResult({
+                asin,
+                sourceUrl: `https://sakura-checker.jp/search/${encodeURIComponent(asin)}/`,
+                message: "ネイティブ応答が不正です。",
+                errorType: "native_error"
+            });
+        }
+
+        return response;
+    } catch (error) {
+        return makeErrorResult({
+            asin,
+            sourceUrl: `https://sakura-checker.jp/search/${encodeURIComponent(asin)}/`,
+            message: "ネイティブ経由の取得に失敗しました。",
+            errorType: "native_error",
+            details: String(error?.message ?? error ?? "unknown")
+        });
+    }
 }
 
 async function fetchSakuraCheckerResult(asin) {
@@ -133,7 +372,7 @@ async function fetchSakuraCheckerResult(asin) {
             method: "GET",
             signal: controller.signal,
             headers: {
-                "accept": "text/html,application/xhtml+xml",
+                accept: "text/html,application/xhtml+xml",
                 "accept-language": "ja,en-US;q=0.9"
             }
         });
@@ -143,22 +382,19 @@ async function fetchSakuraCheckerResult(asin) {
         }
 
         const html = await response.text();
-        const result = parseSakuraCheckerHtml(html, asin, sourceUrl);
+        const result = await parseSakuraCheckerHtml(html, asin, sourceUrl);
         resultCache.set(asin, { timestamp: Date.now(), result });
         return result;
     } catch (error) {
-        const details = String(error?.message ?? error ?? "").trim();
-        const nativeError = nativeResult?.message ? ` / native: ${nativeResult.message}` : "";
-        const result = {
-            status: "error",
+        const result = makeErrorResult({
             asin,
             sourceUrl,
-            fetchedAt: new Date().toISOString(),
             message: error?.name === "AbortError"
-                ? "サクラチェッカーへの接続がタイムアウトしました。"
-                : "サクラチェッカーの取得に失敗しました。",
-            details: `${details}${nativeError}`.trim()
-        };
+                ? "判定サービスへの接続がタイムアウトしました。"
+                : "判定サービスの取得に失敗しました。",
+            errorType: "network_error",
+            details: String(error?.message ?? error ?? "").trim() || nativeResult?.details
+        });
 
         resultCache.set(asin, { timestamp: Date.now(), result });
         return result;
@@ -167,47 +403,36 @@ async function fetchSakuraCheckerResult(asin) {
     }
 }
 
-async function fetchViaNativeHost(asin) {
-    if (typeof browser?.runtime?.sendNativeMessage !== "function") {
-        return null;
-    }
-
-    try {
-        const response = await browser.runtime.sendNativeMessage(NATIVE_APP_ID, {
-            type: "FETCH_SAKURA_RESULT",
-            asin
-        });
-
-        if (!response || typeof response !== "object") {
-            return {
-                status: "error",
-                asin,
-                message: "ネイティブ応答が不正です。"
-            };
+if (typeof browser !== "undefined" && browser?.runtime?.onMessage?.addListener) {
+    browser.runtime.onMessage.addListener((request) => {
+        if (request?.type !== "GET_SAKURA_RESULT") {
+            return undefined;
         }
 
-        return response;
-    } catch (error) {
-        return {
-            status: "error",
-            asin,
-            message: `ネイティブ取得失敗: ${String(error?.message ?? error ?? "unknown")}`
-        };
-    }
+        const asin = normalizeAsin(request.asin);
+        if (!asin) {
+            return Promise.resolve(makeErrorResult({
+                asin: "",
+                sourceUrl: "",
+                message: "ASINの形式が正しくありません。",
+                errorType: "validation_error"
+            }));
+        }
+
+        return fetchSakuraCheckerResult(asin);
+    });
 }
 
-browser.runtime.onMessage.addListener((request) => {
-    if (request?.type !== "GET_SAKURA_RESULT") {
-        return undefined;
-    }
-
-    const asin = normalizeAsin(request.asin);
-    if (!asin) {
-        return Promise.resolve({
-            status: "error",
-            message: "ASINの形式が正しくありません。"
-        });
-    }
-
-    return fetchSakuraCheckerResult(asin);
-});
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = {
+        DEFAULT_PARSER_SPEC,
+        clampScore,
+        decodeEmbeddedWidgetSnippets,
+        makeErrorResult,
+        normalizeAsin,
+        normalizeParserSpec,
+        parseSakuraCheckerHtml,
+        parseScoreFromEmbeddedWidgets,
+        scoreToRiskLevel
+    };
+}
