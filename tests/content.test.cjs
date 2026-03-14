@@ -3,6 +3,12 @@ const assert = require('node:assert/strict');
 
 const content = require('../sakuraInc Extension/Resources/content.js');
 
+test('normalizeAsinCandidate trims and uppercases valid values', () => {
+  assert.equal(content.normalizeAsinCandidate(' b0abc12345 '), 'B0ABC12345');
+  assert.equal(content.normalizeAsinCandidate('B0ABC1234'), null);
+  assert.equal(content.normalizeAsinCandidate(''), null);
+});
+
 test('extractAsinFromUrl handles 10 URL patterns', () => {
   const cases = [
     ['https://www.amazon.co.jp/dp/B012345678', 'B012345678'],
@@ -39,5 +45,34 @@ test('extractAsinFromDom finds ASIN from DOM attributes', () => {
   };
 
   assert.equal(content.extractAsinFromDom(), 'B0DOM11111');
+  global.document = originalDocument;
+});
+
+test('extractAsinFromDom falls back to data attributes and text content', () => {
+  const originalDocument = global.document;
+  const elements = {
+    '#ASIN': null,
+    "input[name='ASIN']": {
+      getAttribute: (name) => (name === 'value' ? 'invalid' : null),
+      dataset: {},
+      textContent: ''
+    },
+    "input[name='asin']": {
+      getAttribute: (name) => (name === 'data-asin' ? ' b0dom22222 ' : null),
+      dataset: {},
+      textContent: ''
+    },
+    '[data-asin]': {
+      getAttribute: () => null,
+      dataset: { asin: 'not-used' },
+      textContent: 'b0dom33333'
+    }
+  };
+
+  global.document = {
+    querySelector: (selector) => elements[selector] ?? null
+  };
+
+  assert.equal(content.extractAsinFromDom(), 'B0DOM22222');
   global.document = originalDocument;
 });

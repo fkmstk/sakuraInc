@@ -1,6 +1,9 @@
 const REQUEST_TIMEOUT_MS = 15000;
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const NATIVE_APP_ID = "com.fkmstk.sakuraInc.Extension";
+const MAX_CACHE_SIZE = 200;
+const HTML_ENTITY_PATTERN = /&(amp|lt|gt|quot|#39);/g;
+const TITLE_TAG_PATTERN = /<title>(.*?)<\/title>/i;
 const SPEC_RESOURCE_PATH = "sakura_parser_spec.json";
 
 const DEFAULT_PARSER_SPEC = {
@@ -34,6 +37,10 @@ function normalizeAsin(rawValue) {
     return /^[A-Z0-9]{10}$/.test(value) ? value : null;
 }
 
+function buildSourceUrl(asin) {
+    return `https://sakura-checker.jp/search/${encodeURIComponent(asin)}/`;
+}
+
 function decodeHtmlEntities(text) {
     const entities = {
         "&amp;": "&",
@@ -43,7 +50,7 @@ function decodeHtmlEntities(text) {
         "&#39;": "'"
     };
 
-    return String(text ?? "").replace(/&(amp|lt|gt|quot|#39);/g, (match) => entities[match] ?? match);
+    return String(text ?? "").replace(HTML_ENTITY_PATTERN, (match) => entities[match] ?? match);
 }
 
 function normalizeRiskBands(rawBands) {
@@ -193,9 +200,100 @@ function clampScore(score) {
     return Math.max(0, Math.min(100, score));
 }
 
+function buildRegExpOrNull(pattern, flags) {
+    try {
+        return new RegExp(pattern, flags);
+    } catch {
+        return null;
+    }
+}
+
+function buildSpecPattern(pattern, fallbackPattern, flags) {
+    return buildRegExpOrNull(pattern, flags) ?? buildRegExpOrNull(fallbackPattern, flags);
+}
+
+function resolveTitle(title, asin) {
+    return title || `ASIN ${asin}`;
+}
+
+function makeOkResult({ asin, title, score, riskLevel, riskLabel, sourceUrl }) {
+    return {
+        status: "ok",
+        asin,
+        title: resolveTitle(title, asin),
+        score,
+        riskLevel,
+        riskLabel,
+        sourceUrl,
+        fetchedAt: new Date().toISOString()
+    };
+}
+
+function makeNotFoundResult({ asin, title, sourceUrl }) {
+    return {
+        status: "not_found",
+        asin,
+        title: resolveTitle(title, asin),
+        sourceUrl,
+        fetchedAt: new Date().toISOString()
+    };
+}
+
+function hasNonEmptyString(value) {
+    return typeof value === "string" && value.trim().length > 0;
+}
+
+function isIsoTimestamp(value) {
+    return hasNonEmptyString(value) && !Number.isNaN(Date.parse(value));
+}
+
+function hasExpectedAsin(value, expectedAsin) {
+    const normalized = normalizeAsin(value);
+    return expectedAsin ? normalized === expectedAsin : normalized !== null;
+}
+
+function isNativeResultPayload(payload, expectedAsin = null) {
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+        return false;
+    }
+
+    if (payload.status === "ok") {
+        return hasExpectedAsin(payload.asin, expectedAsin)
+            && hasNonEmptyString(payload.title)
+            && Number.isFinite(payload.score)
+            && hasNonEmptyString(payload.riskLevel)
+            && hasNonEmptyString(payload.riskLabel)
+            && hasNonEmptyString(payload.sourceUrl)
+            && isIsoTimestamp(payload.fetchedAt);
+    }
+
+    if (payload.status === "not_found") {
+        return hasExpectedAsin(payload.asin, expectedAsin)
+            && hasNonEmptyString(payload.title)
+            && hasNonEmptyString(payload.sourceUrl)
+            && isIsoTimestamp(payload.fetchedAt);
+    }
+
+    if (payload.status === "error") {
+        return hasExpectedAsin(payload.asin, expectedAsin)
+            && hasNonEmptyString(payload.sourceUrl)
+            && hasNonEmptyString(payload.message)
+            && hasNonEmptyString(payload.errorType)
+            && isIsoTimestamp(payload.fetchedAt)
+            && (typeof payload.details === "undefined" || hasNonEmptyString(payload.details));
+    }
+
+    return false;
+}
+
 async function parseScoreFromEmbeddedWidgets(rawHtml, spec) {
     const snippets = decodeEmbeddedWidgetSnippets(rawHtml);
     const scoreImageHashes = new Map(Object.entries(spec.scoreImageHashes));
+    const embeddedTextPattern = buildSpecPattern(
+        spec.embeddedTextPattern,
+        DEFAULT_PARSER_SPEC.embeddedTextPattern,
+        "i"
+    );
 
     for (const snippet of snippets) {
         const sakuraIndex = snippet.search(/sakura-num/i);
@@ -219,7 +317,7 @@ async function parseScoreFromEmbeddedWidgets(rawHtml, spec) {
             }
         }
 
-        const textScoreMatch = snippet.match(new RegExp(spec.embeddedTextPattern, "i"));
+        const textScoreMatch = embeddedTextPattern ? snippet.match(embeddedTextPattern) : null;
         if (textScoreMatch?.[1]) {
             const parsed = Number.parseInt(textScoreMatch[1], 10);
             if (!Number.isNaN(parsed)) {
@@ -248,47 +346,108 @@ function makeErrorResult({ asin, sourceUrl, message, errorType, details }) {
     return result;
 }
 
+function compactHtmlText(html) {
+    return String(html ?? "").replace(/\s+/g, " ");
+}
+
+function extractTitleFromHtml(compactText, spec) {
+    const titleMatch = compactText.match(TITLE_TAG_PATTERN);
+    const rawTitle = titleMatch?.[1] ?? "";
+    const title = decodeHtmlEntities(rawTitle);
+    const titleSuffixPattern = buildSpecPattern(
+        spec.titleSuffixPattern,
+        DEFAULT_PARSER_SPEC.titleSuffixPattern,
+        "i"
+    );
+
+    return titleSuffixPattern
+        ? title.replace(titleSuffixPattern, "").trim()
+        : title.trim();
+}
+
+function parseFallbackScore(compactText, spec) {
+    const fallbackScorePattern = buildSpecPattern(
+        spec.fallbackScorePattern,
+        DEFAULT_PARSER_SPEC.fallbackScorePattern,
+        "i"
+    );
+    const fallbackMatch = fallbackScorePattern ? compactText.match(fallbackScorePattern) : null;
+    if (!fallbackMatch?.[1]) {
+        return null;
+    }
+
+    const parsed = Number.parseInt(fallbackMatch[1], 10);
+    return Number.isNaN(parsed) ? null : clampScore(parsed);
+}
+
+function matchesNotFoundPattern(compactText, patterns) {
+    return patterns.some((pattern) => {
+        try {
+            return new RegExp(pattern, "i").test(compactText);
+        } catch {
+            return compactText.includes(pattern);
+        }
+    });
+}
+
+function getCachedResult(asin) {
+    return resultCache.get(asin) ?? null;
+}
+
+function getFreshCachedResult(asin, now = Date.now()) {
+    const entry = getCachedResult(asin);
+    return entry && (now - entry.timestamp) < CACHE_TTL_MS ? entry.result : null;
+}
+
+function pruneExpiredCacheEntries(now = Date.now()) {
+    for (const [key, entry] of resultCache) {
+        if ((now - entry.timestamp) >= CACHE_TTL_MS) {
+            resultCache.delete(key);
+        }
+    }
+}
+
+function evictOldestCacheEntries(maxSize = MAX_CACHE_SIZE) {
+    while (resultCache.size >= maxSize) {
+        const oldestKey = resultCache.keys().next().value;
+        if (typeof oldestKey === "undefined") {
+            return;
+        }
+        resultCache.delete(oldestKey);
+    }
+}
+
+function cacheResult(asin, result, now = Date.now()) {
+    pruneExpiredCacheEntries(now);
+
+    if (resultCache.has(asin)) {
+        resultCache.delete(asin);
+    }
+
+    evictOldestCacheEntries(MAX_CACHE_SIZE);
+    resultCache.set(asin, { timestamp: now, result });
+    return result;
+}
+
+function clearResultCache() {
+    resultCache.clear();
+}
+
 async function parseSakuraCheckerHtml(html, asin, sourceUrl, specOverride = null) {
     const spec = specOverride ?? await loadParserSpec();
-
     const rawHtml = String(html ?? "");
-    const compactText = rawHtml.replace(/\s+/g, " ");
-
-    const titleMatch = compactText.match(/<title>(.*?)<\/title>/i);
-    const rawTitle = titleMatch?.[1] ?? "";
-    const title = decodeHtmlEntities(rawTitle)
-        .replace(new RegExp(spec.titleSuffixPattern, "i"), "")
-        .trim();
+    const compactText = compactHtmlText(rawHtml);
+    const title = extractTitleFromHtml(compactText, spec);
 
     let score = await parseScoreFromEmbeddedWidgets(rawHtml, spec);
 
     if (score === null) {
-        const fallbackMatch = compactText.match(new RegExp(spec.fallbackScorePattern, "i"));
-        if (fallbackMatch?.[1]) {
-            const parsed = Number.parseInt(fallbackMatch[1], 10);
-            if (!Number.isNaN(parsed)) {
-                score = clampScore(parsed);
-            }
-        }
+        score = parseFallbackScore(compactText, spec);
     }
 
     if (score === null) {
-        const isNotFound = spec.notFoundPatterns.some((pattern) => {
-            try {
-                return new RegExp(pattern, "i").test(compactText);
-            } catch {
-                return compactText.includes(pattern);
-            }
-        });
-
-        if (isNotFound) {
-            return {
-                status: "not_found",
-                asin,
-                title: title || `ASIN ${asin}`,
-                sourceUrl,
-                fetchedAt: new Date().toISOString()
-            };
+        if (matchesNotFoundPattern(compactText, spec.notFoundPatterns)) {
+            return makeNotFoundResult({ asin, title, sourceUrl });
         }
 
         return makeErrorResult({
@@ -302,23 +461,23 @@ async function parseSakuraCheckerHtml(html, asin, sourceUrl, specOverride = null
     const riskBaseScore = score <= 10 ? score * 10 : score;
     const risk = scoreToRiskLevel(riskBaseScore, spec);
 
-    return {
-        status: "ok",
+    return makeOkResult({
         asin,
-        title: title || `ASIN ${asin}`,
+        title,
         score,
         riskLevel: risk.level,
         riskLabel: risk.label,
-        sourceUrl,
-        fetchedAt: new Date().toISOString()
-    };
+        sourceUrl
+    });
 }
 
 async function fetchViaNativeHost(asin) {
+    const sourceUrl = buildSourceUrl(asin);
+
     if (typeof browser?.runtime?.sendNativeMessage !== "function") {
         return makeErrorResult({
             asin,
-            sourceUrl: `https://sakura-checker.jp/search/${encodeURIComponent(asin)}/`,
+            sourceUrl,
             message: "ネイティブ連携が利用できません。",
             errorType: "native_error"
         });
@@ -330,10 +489,10 @@ async function fetchViaNativeHost(asin) {
             asin
         });
 
-        if (!response || typeof response !== "object") {
+        if (!isNativeResultPayload(response, asin)) {
             return makeErrorResult({
                 asin,
-                sourceUrl: `https://sakura-checker.jp/search/${encodeURIComponent(asin)}/`,
+                sourceUrl,
                 message: "ネイティブ応答が不正です。",
                 errorType: "native_error"
             });
@@ -343,7 +502,7 @@ async function fetchViaNativeHost(asin) {
     } catch (error) {
         return makeErrorResult({
             asin,
-            sourceUrl: `https://sakura-checker.jp/search/${encodeURIComponent(asin)}/`,
+            sourceUrl,
             message: "ネイティブ経由の取得に失敗しました。",
             errorType: "native_error",
             details: String(error?.message ?? error ?? "unknown")
@@ -352,18 +511,17 @@ async function fetchViaNativeHost(asin) {
 }
 
 async function fetchSakuraCheckerResult(asin) {
-    const cacheHit = resultCache.get(asin);
-    if (cacheHit && (Date.now() - cacheHit.timestamp) < CACHE_TTL_MS) {
-        return cacheHit.result;
+    const cachedResult = getFreshCachedResult(asin);
+    if (cachedResult) {
+        return cachedResult;
     }
 
     const nativeResult = await fetchViaNativeHost(asin);
     if (nativeResult && nativeResult.status !== "error") {
-        resultCache.set(asin, { timestamp: Date.now(), result: nativeResult });
-        return nativeResult;
+        return cacheResult(asin, nativeResult);
     }
 
-    const sourceUrl = `https://sakura-checker.jp/search/${encodeURIComponent(asin)}/`;
+    const sourceUrl = buildSourceUrl(asin);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -383,8 +541,7 @@ async function fetchSakuraCheckerResult(asin) {
 
         const html = await response.text();
         const result = await parseSakuraCheckerHtml(html, asin, sourceUrl);
-        resultCache.set(asin, { timestamp: Date.now(), result });
-        return result;
+        return cacheResult(asin, result);
     } catch (error) {
         const result = makeErrorResult({
             asin,
@@ -396,8 +553,7 @@ async function fetchSakuraCheckerResult(asin) {
             details: String(error?.message ?? error ?? "").trim() || nativeResult?.details
         });
 
-        resultCache.set(asin, { timestamp: Date.now(), result });
-        return result;
+        return cacheResult(asin, result);
     } finally {
         clearTimeout(timeoutId);
     }
@@ -426,13 +582,27 @@ if (typeof browser !== "undefined" && browser?.runtime?.onMessage?.addListener) 
 if (typeof module !== "undefined" && module.exports) {
     module.exports = {
         DEFAULT_PARSER_SPEC,
+        buildSourceUrl,
+        cacheResult,
+        buildRegExpOrNull,
+        buildSpecPattern,
         clampScore,
+        clearResultCache,
         decodeEmbeddedWidgetSnippets,
+        extractTitleFromHtml,
+        fetchSakuraCheckerResult,
+        fetchViaNativeHost,
+        getFreshCachedResult,
         makeErrorResult,
+        makeNotFoundResult,
+        makeOkResult,
+        matchesNotFoundPattern,
         normalizeAsin,
         normalizeParserSpec,
+        parseFallbackScore,
         parseSakuraCheckerHtml,
         parseScoreFromEmbeddedWidgets,
+        resolveTitle,
         scoreToRiskLevel
     };
 }

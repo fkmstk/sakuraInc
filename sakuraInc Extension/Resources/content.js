@@ -1,18 +1,61 @@
 const PANEL_ID = "sakura-checker-result-panel";
 const STYLE_ID = "sakura-checker-result-style";
+const ASIN_PATTERN = /^[A-Z0-9]{10}$/;
+const ASIN_URL_PATTERNS = [
+    /\/dp\/([A-Z0-9]{10})(?:[/?]|$)/i,
+    /\/gp\/product\/([A-Z0-9]{10})(?:[/?]|$)/i,
+    /\/product\/([A-Z0-9]{10})(?:[/?]|$)/i
+];
+const ASIN_DOM_SELECTORS = [
+    "#ASIN",
+    "input[name='ASIN']",
+    "input[name='asin']",
+    "[data-asin]"
+];
+const MOUNT_POINT_SELECTORS = [
+    "#title_feature_div",
+    "#centerCol",
+    "#ppd"
+];
+
+function normalizeAsinCandidate(candidate) {
+    const value = String(candidate ?? "").trim().toUpperCase();
+    return ASIN_PATTERN.test(value) ? value : null;
+}
+
+function firstNonNullValue(candidates) {
+    for (const candidate of candidates) {
+        const normalized = normalizeAsinCandidate(candidate);
+        if (normalized) {
+            return normalized;
+        }
+    }
+
+    return null;
+}
+
+function findFirstElement(selectors) {
+    if (typeof document === "undefined") {
+        return null;
+    }
+
+    for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+            return element;
+        }
+    }
+
+    return null;
+}
 
 function extractAsinFromUrl(urlValue) {
     const url = String(urlValue ?? "");
-    const patterns = [
-        /\/dp\/([A-Z0-9]{10})(?:[/?]|$)/i,
-        /\/gp\/product\/([A-Z0-9]{10})(?:[/?]|$)/i,
-        /\/product\/([A-Z0-9]{10})(?:[/?]|$)/i
-    ];
 
-    for (const pattern of patterns) {
-        const match = url.match(pattern);
-        if (match?.[1]) {
-            return match[1].toUpperCase();
+    for (const pattern of ASIN_URL_PATTERNS) {
+        const asin = normalizeAsinCandidate(url.match(pattern)?.[1]);
+        if (asin) {
+            return asin;
         }
     }
 
@@ -24,31 +67,20 @@ function extractAsinFromDom() {
         return null;
     }
 
-    const selectors = [
-        "#ASIN",
-        "input[name='ASIN']",
-        "input[name='asin']",
-        "[data-asin]"
-    ];
-
-    for (const selector of selectors) {
+    for (const selector of ASIN_DOM_SELECTORS) {
         const element = document.querySelector(selector);
         if (!element) {
             continue;
         }
 
-        const values = [
+        const asin = firstNonNullValue([
             element.getAttribute("value"),
             element.getAttribute("data-asin"),
             element.dataset?.asin,
             element.textContent
-        ];
-
-        for (const candidate of values) {
-            const value = String(candidate ?? "").trim().toUpperCase();
-            if (/^[A-Z0-9]{10}$/.test(value)) {
-                return value;
-            }
+        ]);
+        if (asin) {
+            return asin;
         }
     }
 
@@ -151,24 +183,7 @@ function ensureStyle() {
 }
 
 function findMountPoint() {
-    if (typeof document === "undefined") {
-        return null;
-    }
-
-    const selectors = [
-        "#title_feature_div",
-        "#centerCol",
-        "#ppd"
-    ];
-
-    for (const selector of selectors) {
-        const element = document.querySelector(selector);
-        if (element) {
-            return element;
-        }
-    }
-
-    return null;
+    return findFirstElement(MOUNT_POINT_SELECTORS);
 }
 
 function createPanel(asin) {
@@ -297,6 +312,8 @@ if (typeof module !== "undefined" && module.exports) {
         extractAsin,
         extractAsinFromDom,
         extractAsinFromUrl,
-        formatTime
+        findFirstElement,
+        formatTime,
+        normalizeAsinCandidate
     };
 }
