@@ -84,16 +84,23 @@ function normalizeParserSpec(rawSpec) {
         }).map(([hash, score]) => [hash, Number(score)])
     );
 
+    const titleSuffixPattern = typeof spec.titleSuffixPattern === "string"
+        ? spec.titleSuffixPattern
+        : DEFAULT_PARSER_SPEC.titleSuffixPattern;
+    const embeddedTextPattern = typeof spec.embeddedTextPattern === "string"
+        ? spec.embeddedTextPattern
+        : DEFAULT_PARSER_SPEC.embeddedTextPattern;
+    const fallbackScorePattern = typeof spec.fallbackScorePattern === "string"
+        ? spec.fallbackScorePattern
+        : DEFAULT_PARSER_SPEC.fallbackScorePattern;
+
     return {
-        titleSuffixPattern: typeof spec.titleSuffixPattern === "string"
-            ? spec.titleSuffixPattern
-            : DEFAULT_PARSER_SPEC.titleSuffixPattern,
-        embeddedTextPattern: typeof spec.embeddedTextPattern === "string"
-            ? spec.embeddedTextPattern
-            : DEFAULT_PARSER_SPEC.embeddedTextPattern,
-        fallbackScorePattern: typeof spec.fallbackScorePattern === "string"
-            ? spec.fallbackScorePattern
-            : DEFAULT_PARSER_SPEC.fallbackScorePattern,
+        titleSuffixPattern,
+        embeddedTextPattern,
+        fallbackScorePattern,
+        titleSuffixRegex: buildSpecPattern(titleSuffixPattern, DEFAULT_PARSER_SPEC.titleSuffixPattern, "i"),
+        embeddedTextRegex: buildSpecPattern(embeddedTextPattern, DEFAULT_PARSER_SPEC.embeddedTextPattern, "i"),
+        fallbackScoreRegex: buildSpecPattern(fallbackScorePattern, DEFAULT_PARSER_SPEC.fallbackScorePattern, "i"),
         notFoundPatterns,
         riskBands: normalizeRiskBands(spec.riskBands),
         scoreImageHashes
@@ -200,27 +207,24 @@ function clampScore(score) {
     return Math.max(0, Math.min(100, score));
 }
 
-function buildRegExpOrNull(pattern, flags) {
+function buildSpecPattern(pattern, fallbackPattern, flags) {
     try {
         return new RegExp(pattern, flags);
     } catch {
+        // primary pattern invalid — try fallback
+    }
+    try {
+        return new RegExp(fallbackPattern, flags);
+    } catch {
         return null;
     }
-}
-
-function buildSpecPattern(pattern, fallbackPattern, flags) {
-    return buildRegExpOrNull(pattern, flags) ?? buildRegExpOrNull(fallbackPattern, flags);
-}
-
-function resolveTitle(title, asin) {
-    return title || `ASIN ${asin}`;
 }
 
 function makeOkResult({ asin, title, score, riskLevel, riskLabel, sourceUrl }) {
     return {
         status: "ok",
         asin,
-        title: resolveTitle(title, asin),
+        title: title || `ASIN ${asin}`,
         score,
         riskLevel,
         riskLabel,
@@ -233,67 +237,40 @@ function makeNotFoundResult({ asin, title, sourceUrl }) {
     return {
         status: "not_found",
         asin,
-        title: resolveTitle(title, asin),
+        title: title || `ASIN ${asin}`,
         sourceUrl,
         fetchedAt: new Date().toISOString()
     };
 }
 
-function hasNonEmptyString(value) {
-    return typeof value === "string" && value.trim().length > 0;
-}
-
-function isIsoTimestamp(value) {
-    return hasNonEmptyString(value) && !Number.isNaN(Date.parse(value));
-}
-
-function hasExpectedAsin(value, expectedAsin) {
-    const normalized = normalizeAsin(value);
-    return expectedAsin ? normalized === expectedAsin : normalized !== null;
-}
-
-function isNativeResultPayload(payload, expectedAsin = null) {
+function isNativeResultPayload(payload, expectedAsin) {
     if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
         return false;
     }
 
+    const isStr = (v) => typeof v === "string" && v.trim().length > 0;
+    const isTs = (v) => isStr(v) && !Number.isNaN(Date.parse(v));
+
+    if (normalizeAsin(payload.asin) !== expectedAsin) return false;
+    if (!isStr(payload.sourceUrl) || !isTs(payload.fetchedAt)) return false;
+
     if (payload.status === "ok") {
-        return hasExpectedAsin(payload.asin, expectedAsin)
-            && hasNonEmptyString(payload.title)
-            && Number.isFinite(payload.score)
-            && hasNonEmptyString(payload.riskLevel)
-            && hasNonEmptyString(payload.riskLabel)
-            && hasNonEmptyString(payload.sourceUrl)
-            && isIsoTimestamp(payload.fetchedAt);
+        return isStr(payload.title) && Number.isFinite(payload.score)
+            && isStr(payload.riskLevel) && isStr(payload.riskLabel);
     }
-
     if (payload.status === "not_found") {
-        return hasExpectedAsin(payload.asin, expectedAsin)
-            && hasNonEmptyString(payload.title)
-            && hasNonEmptyString(payload.sourceUrl)
-            && isIsoTimestamp(payload.fetchedAt);
+        return isStr(payload.title);
     }
-
     if (payload.status === "error") {
-        return hasExpectedAsin(payload.asin, expectedAsin)
-            && hasNonEmptyString(payload.sourceUrl)
-            && hasNonEmptyString(payload.message)
-            && hasNonEmptyString(payload.errorType)
-            && isIsoTimestamp(payload.fetchedAt)
-            && (typeof payload.details === "undefined" || hasNonEmptyString(payload.details));
+        return isStr(payload.message) && isStr(payload.errorType)
+            && (payload.details === undefined || isStr(payload.details));
     }
-
     return false;
 }
 
 async function parseScoreFromEmbeddedWidgets(rawHtml, spec) {
     const snippets = decodeEmbeddedWidgetSnippets(rawHtml);
     const scoreImageHashes = new Map(Object.entries(spec.scoreImageHashes));
-    const embeddedTextPattern = buildSpecPattern(
-        spec.embeddedTextPattern,
-        DEFAULT_PARSER_SPEC.embeddedTextPattern,
-        "i"
-    );
 
     for (const snippet of snippets) {
         const sakuraIndex = snippet.search(/sakura-num/i);
@@ -317,7 +294,7 @@ async function parseScoreFromEmbeddedWidgets(rawHtml, spec) {
             }
         }
 
-        const textScoreMatch = embeddedTextPattern ? snippet.match(embeddedTextPattern) : null;
+        const textScoreMatch = spec.embeddedTextRegex ? snippet.match(spec.embeddedTextRegex) : null;
         if (textScoreMatch?.[1]) {
             const parsed = Number.parseInt(textScoreMatch[1], 10);
             if (!Number.isNaN(parsed)) {
@@ -346,32 +323,18 @@ function makeErrorResult({ asin, sourceUrl, message, errorType, details }) {
     return result;
 }
 
-function compactHtmlText(html) {
-    return String(html ?? "").replace(/\s+/g, " ");
-}
-
 function extractTitleFromHtml(compactText, spec) {
     const titleMatch = compactText.match(TITLE_TAG_PATTERN);
     const rawTitle = titleMatch?.[1] ?? "";
     const title = decodeHtmlEntities(rawTitle);
-    const titleSuffixPattern = buildSpecPattern(
-        spec.titleSuffixPattern,
-        DEFAULT_PARSER_SPEC.titleSuffixPattern,
-        "i"
-    );
 
-    return titleSuffixPattern
-        ? title.replace(titleSuffixPattern, "").trim()
+    return spec.titleSuffixRegex
+        ? title.replace(spec.titleSuffixRegex, "").trim()
         : title.trim();
 }
 
 function parseFallbackScore(compactText, spec) {
-    const fallbackScorePattern = buildSpecPattern(
-        spec.fallbackScorePattern,
-        DEFAULT_PARSER_SPEC.fallbackScorePattern,
-        "i"
-    );
-    const fallbackMatch = fallbackScorePattern ? compactText.match(fallbackScorePattern) : null;
+    const fallbackMatch = spec.fallbackScoreRegex ? compactText.match(spec.fallbackScoreRegex) : null;
     if (!fallbackMatch?.[1]) {
         return null;
     }
@@ -390,12 +353,8 @@ function matchesNotFoundPattern(compactText, patterns) {
     });
 }
 
-function getCachedResult(asin) {
-    return resultCache.get(asin) ?? null;
-}
-
 function getFreshCachedResult(asin, now = Date.now()) {
-    const entry = getCachedResult(asin);
+    const entry = resultCache.get(asin);
     return entry && (now - entry.timestamp) < CACHE_TTL_MS ? entry.result : null;
 }
 
@@ -420,10 +379,7 @@ function evictOldestCacheEntries(maxSize = MAX_CACHE_SIZE) {
 function cacheResult(asin, result, now = Date.now()) {
     pruneExpiredCacheEntries(now);
 
-    if (resultCache.has(asin)) {
-        resultCache.delete(asin);
-    }
-
+    resultCache.delete(asin);
     evictOldestCacheEntries(MAX_CACHE_SIZE);
     resultCache.set(asin, { timestamp: now, result });
     return result;
@@ -434,9 +390,9 @@ function clearResultCache() {
 }
 
 async function parseSakuraCheckerHtml(html, asin, sourceUrl, specOverride = null) {
-    const spec = specOverride ?? await loadParserSpec();
+    const spec = specOverride ? normalizeParserSpec(specOverride) : await loadParserSpec();
     const rawHtml = String(html ?? "");
-    const compactText = compactHtmlText(rawHtml);
+    const compactText = rawHtml.replace(/\s+/g, " ");
     const title = extractTitleFromHtml(compactText, spec);
 
     let score = await parseScoreFromEmbeddedWidgets(rawHtml, spec);
@@ -583,9 +539,8 @@ if (typeof module !== "undefined" && module.exports) {
     module.exports = {
         DEFAULT_PARSER_SPEC,
         buildSourceUrl,
-        cacheResult,
-        buildRegExpOrNull,
         buildSpecPattern,
+        cacheResult,
         clampScore,
         clearResultCache,
         decodeEmbeddedWidgetSnippets,
@@ -602,7 +557,6 @@ if (typeof module !== "undefined" && module.exports) {
         parseFallbackScore,
         parseSakuraCheckerHtml,
         parseScoreFromEmbeddedWidgets,
-        resolveTitle,
         scoreToRiskLevel
     };
 }

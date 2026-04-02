@@ -23,17 +23,6 @@ function normalizeAsinCandidate(candidate) {
     return ASIN_PATTERN.test(value) ? value : null;
 }
 
-function firstNonNullValue(candidates) {
-    for (const candidate of candidates) {
-        const normalized = normalizeAsinCandidate(candidate);
-        if (normalized) {
-            return normalized;
-        }
-    }
-
-    return null;
-}
-
 function findFirstElement(selectors) {
     if (typeof document === "undefined") {
         return null;
@@ -73,14 +62,16 @@ function extractAsinFromDom() {
             continue;
         }
 
-        const asin = firstNonNullValue([
+        for (const candidate of [
             element.getAttribute("value"),
             element.getAttribute("data-asin"),
             element.dataset?.asin,
             element.textContent
-        ]);
-        if (asin) {
-            return asin;
+        ]) {
+            const asin = normalizeAsinCandidate(candidate);
+            if (asin) {
+                return asin;
+            }
         }
     }
 
@@ -240,7 +231,7 @@ function updatePanel(panel, result, asin) {
     const link = panel.querySelector(".sakura-link");
     const time = panel.querySelector(".sakura-time");
 
-    const sourceUrl = result?.sourceUrl || `https://sakura-checker.jp/search/${asin}/`;
+    const sourceUrl = result?.sourceUrl || `https://sakura-checker.jp/search/${encodeURIComponent(asin)}/`;
     link.href = sourceUrl;
     time.textContent = result?.fetchedAt ? `更新: ${formatTime(result.fetchedAt)}` : "";
 

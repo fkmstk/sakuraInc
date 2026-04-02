@@ -4,11 +4,16 @@ const assert = require('node:assert/strict');
 const originalBrowser = global.browser;
 const originalFetch = global.fetch;
 
-global.browser = {
-  runtime: {
-    onMessage: { addListener: () => {} }
-  }
-};
+function mockBrowser(sendNativeMessage) {
+  return {
+    runtime: {
+      onMessage: { addListener: () => {} },
+      ...(sendNativeMessage && { sendNativeMessage })
+    }
+  };
+}
+
+global.browser = mockBrowser();
 
 const background = require('../sakuraInc Extension/Resources/background.js');
 const spec = background.normalizeParserSpec(background.DEFAULT_PARSER_SPEC);
@@ -16,11 +21,7 @@ const spec = background.normalizeParserSpec(background.DEFAULT_PARSER_SPEC);
 test.beforeEach(() => {
   background.clearResultCache?.();
   global.fetch = originalFetch;
-  global.browser = {
-    runtime: {
-      onMessage: { addListener: () => {} }
-    }
-  };
+  global.browser = mockBrowser();
 });
 
 test('normalizeAsin validates 10-char ASIN', () => {
@@ -104,12 +105,28 @@ test('parseSakuraCheckerHtml falls back to default regexes when spec patterns ar
   assert.equal(parsed.score, 35);
 });
 
+test('parseSakuraCheckerHtml normalizes raw parser spec overrides before parsing', async () => {
+  const html = `
+    <html><head><title>Raw Spec Item - サクラチェッカー</title></head>
+    <body>
+      <p class="sakura-alert">サクラ度は 45 % です</p>
+    </body></html>
+  `;
+
+  const parsed = await background.parseSakuraCheckerHtml(
+    html,
+    'B000000006',
+    'https://sakura-checker.jp/search/B000000006/',
+    background.DEFAULT_PARSER_SPEC
+  );
+
+  assert.equal(parsed.status, 'ok');
+  assert.equal(parsed.title, 'Raw Spec Item');
+  assert.equal(parsed.score, 45);
+});
+
 test('fetchViaNativeHost returns native_error when sendNativeMessage is unavailable', async () => {
-  global.browser = {
-    runtime: {
-      onMessage: { addListener: () => {} }
-    }
-  };
+  global.browser = mockBrowser();
 
   const result = await background.fetchViaNativeHost('B000000010');
   assert.equal(result.status, 'error');
@@ -118,12 +135,7 @@ test('fetchViaNativeHost returns native_error when sendNativeMessage is unavaila
 });
 
 test('fetchViaNativeHost returns native_error for invalid native responses', async () => {
-  global.browser = {
-    runtime: {
-      onMessage: { addListener: () => {} },
-      sendNativeMessage: async () => 'invalid'
-    }
-  };
+  global.browser = mockBrowser(async () => 'invalid');
 
   const result = await background.fetchViaNativeHost('B000000011');
   assert.equal(result.status, 'error');
@@ -131,12 +143,7 @@ test('fetchViaNativeHost returns native_error for invalid native responses', asy
 });
 
 test('fetchViaNativeHost rejects object responses without status', async () => {
-  global.browser = {
-    runtime: {
-      onMessage: { addListener: () => {} },
-      sendNativeMessage: async () => ({ score: 50 })
-    }
-  };
+  global.browser = mockBrowser(async () => ({ score: 50 }));
 
   const result = await background.fetchViaNativeHost('B000000017');
   assert.equal(result.status, 'error');
@@ -144,12 +151,7 @@ test('fetchViaNativeHost rejects object responses without status', async () => {
 });
 
 test('fetchViaNativeHost rejects ok responses missing required fields', async () => {
-  global.browser = {
-    runtime: {
-      onMessage: { addListener: () => {} },
-      sendNativeMessage: async () => ({ status: 'ok', asin: 'B000000018' })
-    }
-  };
+  global.browser = mockBrowser(async () => ({ status: 'ok', asin: 'B000000018' }));
 
   const result = await background.fetchViaNativeHost('B000000018');
   assert.equal(result.status, 'error');
@@ -157,14 +159,9 @@ test('fetchViaNativeHost rejects ok responses missing required fields', async ()
 });
 
 test('fetchViaNativeHost includes details when native messaging throws', async () => {
-  global.browser = {
-    runtime: {
-      onMessage: { addListener: () => {} },
-      sendNativeMessage: async () => {
-        throw new Error('native failed');
-      }
-    }
-  };
+  global.browser = mockBrowser(async () => {
+    throw new Error('native failed');
+  });
 
   const result = await background.fetchViaNativeHost('B000000012');
   assert.equal(result.status, 'error');
@@ -177,24 +174,19 @@ test('fetchSakuraCheckerResult returns fresh cache without calling native or fet
   let nativeCalls = 0;
   let fetchCalls = 0;
 
-  global.browser = {
-    runtime: {
-      onMessage: { addListener: () => {} },
-      sendNativeMessage: async () => {
-        nativeCalls += 1;
-        return {
-          status: 'ok',
-          asin,
-          title: 'Cached native result',
-          score: 55,
-          riskLevel: 'medium',
-          riskLabel: 'やや注意',
-          sourceUrl: background.buildSourceUrl(asin),
-          fetchedAt: '2026-03-13T00:00:00.000Z'
-        };
-      }
-    }
-  };
+  global.browser = mockBrowser(async () => {
+    nativeCalls += 1;
+    return {
+      status: 'ok',
+      asin,
+      title: 'Cached native result',
+      score: 55,
+      riskLevel: 'medium',
+      riskLabel: 'やや注意',
+      sourceUrl: background.buildSourceUrl(asin),
+      fetchedAt: '2026-03-13T00:00:00.000Z'
+    };
+  });
 
   global.fetch = async () => {
     fetchCalls += 1;
@@ -214,24 +206,19 @@ test('fetchSakuraCheckerResult caches successful native results', async () => {
   const asin = 'B000000014';
   let nativeCalls = 0;
 
-  global.browser = {
-    runtime: {
-      onMessage: { addListener: () => {} },
-      sendNativeMessage: async () => {
-        nativeCalls += 1;
-        return {
-          status: 'ok',
-          asin,
-          title: 'Native success',
-          score: 80,
-          riskLevel: 'very-high',
-          riskLabel: '危険',
-          sourceUrl: background.buildSourceUrl(asin),
-          fetchedAt: '2026-03-13T00:00:00.000Z'
-        };
-      }
-    }
-  };
+  global.browser = mockBrowser(async () => {
+    nativeCalls += 1;
+    return {
+      status: 'ok',
+      asin,
+      title: 'Native success',
+      score: 80,
+      riskLevel: 'very-high',
+      riskLabel: '危険',
+      sourceUrl: background.buildSourceUrl(asin),
+      fetchedAt: '2026-03-13T00:00:00.000Z'
+    };
+  });
 
   global.fetch = async () => {
     throw new Error('fetch should not run');
@@ -270,15 +257,10 @@ test('fetchSakuraCheckerResult falls back to HTTP fetch after native error', asy
   let nativeCalls = 0;
   let fetchCalls = 0;
 
-  global.browser = {
-    runtime: {
-      onMessage: { addListener: () => {} },
-      sendNativeMessage: async () => {
-        nativeCalls += 1;
-        throw new Error('native offline');
-      }
-    }
-  };
+  global.browser = mockBrowser(async () => {
+    nativeCalls += 1;
+    throw new Error('native offline');
+  });
 
   global.fetch = async (url) => {
     if (url === background.buildSourceUrl(asin)) {
@@ -314,19 +296,14 @@ test('fetchSakuraCheckerResult returns network_error and caches failures', async
   const abortError = new Error('timed out');
   abortError.name = 'AbortError';
 
-  global.browser = {
-    runtime: {
-      onMessage: { addListener: () => {} },
-      sendNativeMessage: async () => {
-        nativeCalls += 1;
-        return {
-          status: 'error',
-          errorType: 'native_error',
-          details: 'native down'
-        };
-      }
-    }
-  };
+  global.browser = mockBrowser(async () => {
+    nativeCalls += 1;
+    return {
+      status: 'error',
+      errorType: 'native_error',
+      details: 'native down'
+    };
+  });
 
   global.fetch = async () => {
     fetchCalls += 1;
