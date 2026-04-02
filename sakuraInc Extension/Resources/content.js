@@ -18,6 +18,10 @@ const MOUNT_POINT_SELECTORS = [
     "#ppd"
 ];
 
+function buildSourceUrl(asin) {
+    return `https://sakura-checker.jp/search/${encodeURIComponent(asin)}/`;
+}
+
 function normalizeAsinCandidate(candidate) {
     const value = String(candidate ?? "").trim().toUpperCase();
     return ASIN_PATTERN.test(value) ? value : null;
@@ -51,6 +55,22 @@ function extractAsinFromUrl(urlValue) {
     return null;
 }
 
+function extractAsinFromElement(element) {
+    for (const candidate of [
+        element.getAttribute("value"),
+        element.getAttribute("data-asin"),
+        element.dataset?.asin,
+        element.textContent
+    ]) {
+        const asin = normalizeAsinCandidate(candidate);
+        if (asin) {
+            return asin;
+        }
+    }
+
+    return null;
+}
+
 function extractAsinFromDom() {
     if (typeof document === "undefined") {
         return null;
@@ -62,16 +82,9 @@ function extractAsinFromDom() {
             continue;
         }
 
-        for (const candidate of [
-            element.getAttribute("value"),
-            element.getAttribute("data-asin"),
-            element.dataset?.asin,
-            element.textContent
-        ]) {
-            const asin = normalizeAsinCandidate(candidate);
-            if (asin) {
-                return asin;
-            }
+        const asin = extractAsinFromElement(element);
+        if (asin) {
+            return asin;
         }
     }
 
@@ -189,7 +202,7 @@ function createPanel(asin) {
         <div class="sakura-score">...</div>
         <div class="sakura-summary">ASIN ${asin} の判定を取得中だっちゃ。</div>
         <div class="sakura-meta">
-            <a class="sakura-link" href="#" target="_blank" rel="noopener noreferrer">判定元ページを開く</a>
+            <a class="sakura-link" href="${buildSourceUrl(asin)}" target="_blank" rel="noopener noreferrer">判定元ページを開く</a>
             <span class="sakura-time"></span>
         </div>
     `;
@@ -231,7 +244,7 @@ function updatePanel(panel, result, asin) {
     const link = panel.querySelector(".sakura-link");
     const time = panel.querySelector(".sakura-time");
 
-    const sourceUrl = result?.sourceUrl || `https://sakura-checker.jp/search/${encodeURIComponent(asin)}/`;
+    const sourceUrl = result?.sourceUrl || buildSourceUrl(asin);
     link.href = sourceUrl;
     time.textContent = result?.fetchedAt ? `更新: ${formatTime(result.fetchedAt)}` : "";
 
