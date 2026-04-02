@@ -53,6 +53,19 @@ function decodeHtmlEntities(text) {
     return String(text ?? "").replace(HTML_ENTITY_PATTERN, (match) => entities[match] ?? match);
 }
 
+function pickString(value, fallback) {
+    return typeof value === "string" ? value : fallback;
+}
+
+function filterStringEntries(values, fallback) {
+    if (!Array.isArray(values)) {
+        return [...fallback];
+    }
+
+    const filtered = values.filter((item) => typeof item === "string" && item.trim().length > 0);
+    return filtered.length > 0 ? filtered : [...fallback];
+}
+
 function normalizeRiskBands(rawBands) {
     if (!Array.isArray(rawBands)) {
         return [...DEFAULT_PARSER_SPEC.riskBands];
@@ -71,10 +84,7 @@ function normalizeRiskBands(rawBands) {
 
 function normalizeParserSpec(rawSpec) {
     const spec = rawSpec && typeof rawSpec === "object" ? rawSpec : {};
-
-    const notFoundPatterns = Array.isArray(spec.notFoundPatterns)
-        ? spec.notFoundPatterns.filter((item) => typeof item === "string" && item.trim().length > 0)
-        : DEFAULT_PARSER_SPEC.notFoundPatterns;
+    const notFoundPatterns = filterStringEntries(spec.notFoundPatterns, DEFAULT_PARSER_SPEC.notFoundPatterns);
 
     const scoreImageHashes = Object.fromEntries(
         Object.entries(spec.scoreImageHashes ?? {}).filter(([hash, score]) => {
@@ -84,15 +94,9 @@ function normalizeParserSpec(rawSpec) {
         }).map(([hash, score]) => [hash, Number(score)])
     );
 
-    const titleSuffixPattern = typeof spec.titleSuffixPattern === "string"
-        ? spec.titleSuffixPattern
-        : DEFAULT_PARSER_SPEC.titleSuffixPattern;
-    const embeddedTextPattern = typeof spec.embeddedTextPattern === "string"
-        ? spec.embeddedTextPattern
-        : DEFAULT_PARSER_SPEC.embeddedTextPattern;
-    const fallbackScorePattern = typeof spec.fallbackScorePattern === "string"
-        ? spec.fallbackScorePattern
-        : DEFAULT_PARSER_SPEC.fallbackScorePattern;
+    const titleSuffixPattern = pickString(spec.titleSuffixPattern, DEFAULT_PARSER_SPEC.titleSuffixPattern);
+    const embeddedTextPattern = pickString(spec.embeddedTextPattern, DEFAULT_PARSER_SPEC.embeddedTextPattern);
+    const fallbackScorePattern = pickString(spec.fallbackScorePattern, DEFAULT_PARSER_SPEC.fallbackScorePattern);
 
     return {
         titleSuffixPattern,
