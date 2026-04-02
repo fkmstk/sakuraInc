@@ -1,0 +1,20 @@
+.DS_Store
+
+# Xcode user and build artifacts
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+
+# Node and test artifacts
+node_modules/
+coverage/
+

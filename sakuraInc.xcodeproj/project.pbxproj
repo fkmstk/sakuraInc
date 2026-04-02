@@ -350,10 +350,11 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/validate_release_metadata.stamp",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/scripts/validate_release_metadata.sh\" \"$SRCROOT/sakuraInc/Resources/AppConfig.plist\" \"$CONFIGURATION\"\n";
+			shellScript = "\"$SRCROOT/scripts/validate_release_metadata.sh\" \"$SRCROOT/sakuraInc/Resources/AppConfig.plist\" \"$CONFIGURATION\" \"$DERIVED_FILE_DIR/validate_release_metadata.stamp\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

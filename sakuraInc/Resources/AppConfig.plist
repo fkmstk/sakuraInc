@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>PrivacyPolicyURL</key>
-	<string>__SET_BEFORE_RELEASE__</string>
+	<string>https://github.com/fkmstk/sakuraInc/blob/main/docs/PRIVACY_POLICY_JA.md</string>
 	<key>SupportURL</key>
-	<string>__SET_BEFORE_RELEASE__</string>
+	<string>https://github.com/fkmstk/sakuraInc/blob/main/docs/SUPPORT.md</string>
 	<key>PublicDisplayName</key>
 	<string>Shopping Review Reference</string>
 </dict>

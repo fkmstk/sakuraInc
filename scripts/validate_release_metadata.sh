@@ -4,6 +4,7 @@ set -eu
 
 CONFIG_PATH="${1:?config path is required}"
 BUILD_CONFIGURATION="${2:?build configuration is required}"
+STAMP_PATH="${3:-}"
 PLACEHOLDER="__SET_BEFORE_RELEASE__"
 
 read_plist_value() {
@@ -43,3 +44,8 @@ case "$support_url" in
         exit 1
         ;;
 esac
+
+if [ -n "$STAMP_PATH" ]; then
+    mkdir -p "$(dirname "$STAMP_PATH")"
+    : > "$STAMP_PATH"
+fi
