@@ -12,6 +12,29 @@ read_plist_value() {
     /usr/bin/plutil -extract "$key" raw -o - "$CONFIG_PATH" 2>/dev/null || true
 }
 
+require_release_url() {
+    label="$1"
+    value="$2"
+
+    if [ -z "$value" ]; then
+        echo "Release build blocked: ${label} URL is empty." >&2
+        exit 1
+    fi
+
+    if [ "$value" = "$PLACEHOLDER" ]; then
+        echo "Release build blocked: ${label} URL still uses the placeholder value." >&2
+        exit 1
+    fi
+
+    case "$value" in
+        http://*|https://*) ;;
+        *)
+            echo "Release build blocked: ${label} URL must be http/https." >&2
+            exit 1
+            ;;
+    esac
+}
+
 privacy_url="$(read_plist_value PrivacyPolicyURL)"
 support_url="$(read_plist_value SupportURL)"
 
@@ -19,31 +42,8 @@ if [ "$BUILD_CONFIGURATION" != "Release" ]; then
     exit 0
 fi
 
-if [ -z "$privacy_url" ] || [ -z "$support_url" ]; then
-    echo "Release build blocked: privacy/support URL is empty." >&2
-    exit 1
-fi
-
-if [ "$privacy_url" = "$PLACEHOLDER" ] || [ "$support_url" = "$PLACEHOLDER" ]; then
-    echo "Release build blocked: AppConfig.plist still contains placeholder URLs." >&2
-    exit 1
-fi
-
-case "$privacy_url" in
-    http://*|https://*) ;;
-    *)
-        echo "Release build blocked: privacy policy URL must be http/https." >&2
-        exit 1
-        ;;
-esac
-
-case "$support_url" in
-    http://*|https://*) ;;
-    *)
-        echo "Release build blocked: support URL must be http/https." >&2
-        exit 1
-        ;;
-esac
+require_release_url "privacy policy" "$privacy_url"
+require_release_url "support" "$support_url"
 
 if [ -n "$STAMP_PATH" ]; then
     mkdir -p "$(dirname "$STAMP_PATH")"
